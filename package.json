@@ -8,7 +8,7 @@
   "scripts": {
     "test": "node test/test.js && node test/proxy.test.js",
     "sync-vendor": "node ../tools/sync-vendor.js",
-    "prepublishOnly": "npm run sync-vendor && git diff --exit-code lib/vendor && npm test"
+    "prepublishOnly": "if [ -f ../tools/sync-vendor.js ]; then npm run sync-vendor && git diff --exit-code lib/vendor; fi && npm test"
   },
   "files": [
     "bin",
