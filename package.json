@@ -7,7 +7,8 @@
   },
   "scripts": {
     "test": "node test/test.js && node test/proxy.test.js",
-    "sync-vendor": "node ../tools/sync-vendor.js"
+    "sync-vendor": "node ../tools/sync-vendor.js",
+    "prepublishOnly": "npm run sync-vendor && git diff --exit-code lib/vendor && npm test"
   },
   "files": [
     "bin",
@@ -28,5 +29,14 @@
     "cli",
     "proxy"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "author": "sue738",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sue738/ccwire.git"
+  },
+  "homepage": "https://github.com/sue738/ccwire#readme",
+  "bugs": {
+    "url": "https://github.com/sue738/ccwire/issues"
+  }
 }

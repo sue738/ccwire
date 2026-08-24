@@ -8,7 +8,7 @@ it: *"Claude Code sends 33k tokens before reading the prompt."* ccwire answers
 the question locally, from your own transcripts:
 
 ```
-$ npx ccwire
+$ ccwire
 
 ccwire — 657fb6c1 · private · 142 requests · claude-fable-5
 
@@ -48,9 +48,17 @@ is measured from your own data, not from a blog post.
 
 ## Install / run
 
+Not yet published to npm — build from this checkout:
+
+```sh
+git clone https://github.com/sue738/ccwire.git
+cd ccwire
+npm link   # or: npm install -g .
+```
+
 ```bash
-npx ccwire                 # latest session of the project you're in
-ccwire 657f                # session by id prefix
+ccwire                      # latest session of the project you're in
+ccwire 657f                 # session by id prefix
 ccwire --turns 10          # last 10 requests: real tokens, growth per turn
 ccwire --diff              # what the last request added (and the biggest new blocks)
 ccwire --json              # everything, machine-readable
@@ -129,9 +137,11 @@ ccwire proxy-report                               # what it saw
 ```
 
 Byte-for-byte passthrough — nothing is modified, auth headers are never
-logged. This needs the session actually routed through it, which is real
-friction, so reach for it only when the default command's estimate isn't
-enough and you need the literal number.
+logged. Binds to `127.0.0.1` only and rejects anything but requests to
+its own forward target, so nothing else on your network can reach or
+relay through it. This needs the session actually routed through it,
+which is real friction, so reach for it only when the default command's
+estimate isn't enough and you need the literal number.
 
 ## Why you'd run it
 
@@ -148,5 +158,7 @@ A tool that inspects your sessions deserves maximum suspicion, so:
 
 - **Zero dependencies, no postinstall, no build step** — read it first, it's short
 - **Fully local** — nothing leaves your machine, no telemetry
-- **Read-only** — it never modifies a transcript
-- Paranoid path: `git clone <repo> && node ccwire/bin/ccwire.js`
+- **Read-only** — it never modifies a transcript (`ccwire proxy` is the one
+  opt-in exception: it relays your own traffic to the API, bound to
+  `127.0.0.1` only)
+- Paranoid path: `git clone https://github.com/sue738/ccwire.git && node ccwire/bin/ccwire.js`
