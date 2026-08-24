@@ -1,0 +1,32 @@
+{
+  "name": "ccwire",
+  "version": "0.1.0",
+  "description": "See what your Claude Code session actually sends to the API: real token totals per request, a category breakdown, and the invisible overhead you never see. Includes an optional live proxy for the bytes a transcript cannot show.",
+  "bin": {
+    "ccwire": "bin/ccwire.js"
+  },
+  "scripts": {
+    "test": "node test/test.js && node test/proxy.test.js",
+    "sync-vendor": "node ../tools/sync-vendor.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "tokens",
+    "audit",
+    "transparency",
+    "context-window",
+    "cli",
+    "proxy"
+  ],
+  "license": "MIT"
+}
