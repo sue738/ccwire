@@ -1,0 +1,27 @@
+# npm trusted publishing (OIDC) + provenance.
+# Before this can succeed, register this repo's GitHub Actions as a
+# trusted publisher for the package on npmjs.com (package settings) --
+# that step needs a human with npm account access, not CI.
+#
+# Usage: push a vX.Y.Z tag to publish.
+name: publish
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write   # required for OIDC trusted publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+      - run: npm test
+      - run: npm publish --provenance --access public
