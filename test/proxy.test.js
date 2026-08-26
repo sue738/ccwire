@@ -9,7 +9,7 @@ let pass = 0, fail = 0;
 function ok(name, cond) { if (cond) { pass++; console.log('  ✓', name); } else { fail++; console.log('  ✗', name); } }
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'xray-'));
-process.env.CCWIRE_PROXY_LOG = path.join(tmp, 'requests.jsonl');
+process.env.CCPAYLOAD_PROXY_LOG = path.join(tmp, 'requests.jsonl');
 
 const { analyzeRequest, usageCollector, handle } = require('../lib/proxy.js');
 
@@ -62,7 +62,7 @@ console.log('== usageCollector ==');
     });
   });
   await new Promise((r) => upstream.listen(0, r));
-  process.env.CCWIRE_PROXY_FORWARD_URL = 'http://localhost:' + upstream.address().port;
+  process.env.CCPAYLOAD_PROXY_FORWARD_URL = 'http://localhost:' + upstream.address().port;
   // handleはmodule読込時にFORWARDを固定するので、env反映のためrequireし直す
   delete require.cache[require.resolve('../lib/proxy.js')];
   const fresh = require('../lib/proxy.js');
@@ -84,11 +84,11 @@ console.log('== usageCollector ==');
   ok('e2e: レスポンスも素通し', JSON.parse(resp).id === 'msg_1');
 
   await new Promise((r) => setTimeout(r, 200)); // ログ書き込み待ち
-  const log = fs.readFileSync(process.env.CCWIRE_PROXY_LOG, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+  const log = fs.readFileSync(process.env.CCPAYLOAD_PROXY_LOG, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
   ok('e2e: 1リクエスト記録', log.length === 1 && log[0].model === 'claude-sonnet-5');
   ok('e2e: usageを記録', log[0].usage && log[0].usage.cache_read_input_tokens === 999);
-  ok('e2e: ログに認証情報が無い', !fs.readFileSync(process.env.CCWIRE_PROXY_LOG, 'utf8').includes('secret-key-123'));
-  ok('e2e: ログに本文が無い(メタデータのみ)', !fs.readFileSync(process.env.CCWIRE_PROXY_LOG, 'utf8').includes('ping'));
+  ok('e2e: ログに認証情報が無い', !fs.readFileSync(process.env.CCPAYLOAD_PROXY_LOG, 'utf8').includes('secret-key-123'));
+  ok('e2e: ログに本文が無い(メタデータのみ)', !fs.readFileSync(process.env.CCPAYLOAD_PROXY_LOG, 'utf8').includes('ping'));
 
   proxy.close(); upstream.close();
   fs.rmSync(tmp, { recursive: true, force: true });

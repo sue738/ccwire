@@ -1,11 +1,11 @@
-/** test.js — ccwire の解析ロジックと CLI を fixture で検証(環境非依存)。 */
+/** test.js — ccpayload の解析ロジックと CLI を fixture で検証(環境非依存)。 */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execFileSync } = require('child_process');
-const W = require('../lib/wire.js');
+const W = require('../lib/payload.js');
 
 let pass = 0, fail = 0;
 const ok = (n, c) => { if (c) { pass++; console.log('  ✓', n); } else { fail++; console.log('  ✗', n); } };
@@ -85,12 +85,12 @@ ok('preview は80文字以内', d.newBlocks.every((b) => b.preview.length <= 80)
 ok('リクエスト1件では null', W.diffLast(entries.slice(0, 3)) === null);
 
 console.log('== CLI ==');
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ccwire-'));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ccpayload-'));
 const pdir = path.join(tmp, '-home-u-demo');
 fs.mkdirSync(pdir, { recursive: true });
 fs.writeFileSync(path.join(pdir, 'sess-fixture.jsonl'), entries.map((e) => JSON.stringify(e)).join('\n') + '\n');
-const BIN = path.join(__dirname, '..', 'bin', 'ccwire.js');
-const env = Object.assign({}, process.env, { CC_WIRE_LANG: 'en' });
+const BIN = path.join(__dirname, '..', 'bin', 'ccpayload.js');
+const env = Object.assign({}, process.env, { CCPAYLOAD_LANG: 'en' });
 const run = (args) => execFileSync('node', [BIN, '--base-dir', tmp, ...args], { encoding: 'utf8', env });
 
 const outJson = JSON.parse(run(['sess', '--json']));
@@ -101,7 +101,7 @@ ok('実測総量を表示', outText.includes('30,905'));
 ok('baseline 行を表示', outText.includes('before your first message'));
 ok('invisible overhead を表示', outText.includes('invisible overhead'));
 ok('turns 表を表示', outText.includes('Δ'));
-const outJa = execFileSync('node', [BIN, '--base-dir', tmp, 'sess'], { encoding: 'utf8', env: Object.assign({}, process.env, { CC_WIRE_LANG: 'ja' }) });
+const outJa = execFileSync('node', [BIN, '--base-dir', tmp, 'sess'], { encoding: 'utf8', env: Object.assign({}, process.env, { CCPAYLOAD_LANG: 'ja' }) });
 ok('ja 指定で日本語ラベル', outJa.includes('最終リクエスト'));
 
 fs.rmSync(tmp, { recursive: true, force: true });
@@ -118,7 +118,7 @@ ok('pctOfWindow', W.pctOfWindow(100000, 200000) === 50 && W.pctOfWindow(0, 20000
 // 「2日前」がそもそも1日以上前かどうかが変わる)。
 // day1(2日前)のピークは160,050(80.025%→80%丸め)、day2(今)は40,100(20.1%)。
 // sidechain のusageは数えない。
-const tmp2 = fs.mkdtempSync(path.join(os.tmpdir(), 'ccwire-daily-'));
+const tmp2 = fs.mkdtempSync(path.join(os.tmpdir(), 'ccpayload-daily-'));
 const pdir2 = path.join(tmp2, '-home-u-demo');
 fs.mkdirSync(pdir2, { recursive: true });
 const nowIso = new Date().toISOString();
@@ -163,7 +163,7 @@ fs.rmSync(tmp2, { recursive: true, force: true });
 // 1回だけ長いセッション(context 190,000まで線形に育つ19ターン)+短いセッション
 // 多数(context 2,000で1ターンずつ×10) という、実データが示していた
 // 「長いセッションが平均を吊り上げる」構図を小さく再現する。
-const tmp2b = fs.mkdtempSync(path.join(os.tmpdir(), 'ccwire-p50-'));
+const tmp2b = fs.mkdtempSync(path.join(os.tmpdir(), 'ccpayload-p50-'));
 const pdir2b = path.join(tmp2b, '-home-u-demo');
 fs.mkdirSync(pdir2b, { recursive: true });
 const longSession = Array.from({ length: 19 }, (_, i) => ({
@@ -192,7 +192,7 @@ fs.rmSync(tmp2b, { recursive: true, force: true });
 // 実データでの発見(実測: 全日の peak が450-500%で固定表示されていた)を再現する
 // 回帰テスト — 200,000を超えるリクエストが実在した日は、1,000,000窓に切り替わり
 // 100%を超えないこと。
-const tmp3 = fs.mkdtempSync(path.join(os.tmpdir(), 'ccwire-daily-big-'));
+const tmp3 = fs.mkdtempSync(path.join(os.tmpdir(), 'ccpayload-daily-big-'));
 const pdir3 = path.join(tmp3, '-home-u-demo');
 fs.mkdirSync(pdir3, { recursive: true });
 const bigDay = [
@@ -209,7 +209,7 @@ console.log('== --daily --breakdown ==');
 // 既存の entries fixture(2リクエスト、analyze()で既に検証済み)を1セッションだけ
 // 置いて実行 — 集計ロジックは analyze() をそのまま合算するだけなので、期待値は
 // 独自に計算せず a.visible / a.invisible / a.last.realIn を直接使う。
-const tmp4 = fs.mkdtempSync(path.join(os.tmpdir(), 'ccwire-breakdown-'));
+const tmp4 = fs.mkdtempSync(path.join(os.tmpdir(), 'ccpayload-breakdown-'));
 const pdir4 = path.join(tmp4, '-home-u-demo');
 fs.mkdirSync(pdir4, { recursive: true });
 fs.writeFileSync(path.join(pdir4, 'sess-fixture.jsonl'), entries.map((e) => JSON.stringify(e)).join('\n') + '\n');
@@ -238,7 +238,7 @@ fs.rmSync(tmp4, { recursive: true, force: true });
 console.log('== --daily --cache ==');
 // 1日・2リクエスト: 非キャッシュ100+キャッシュ書込(1h:500/5m:200)+読込1000。
 // 合計1800のうちそれぞれの%を検算する。
-const tmp5 = fs.mkdtempSync(path.join(os.tmpdir(), 'ccwire-cache-'));
+const tmp5 = fs.mkdtempSync(path.join(os.tmpdir(), 'ccpayload-cache-'));
 const pdir5 = path.join(tmp5, '-home-u-demo');
 fs.mkdirSync(pdir5, { recursive: true });
 const cacheDay = [
@@ -259,7 +259,7 @@ ok('テキスト表示に列見出しを明記', cacheText.includes('write-1h') 
 fs.rmSync(tmp5, { recursive: true, force: true });
 
 console.log('== --daily --interrupt ==');
-const tmp6 = fs.mkdtempSync(path.join(os.tmpdir(), 'ccwire-interrupt-'));
+const tmp6 = fs.mkdtempSync(path.join(os.tmpdir(), 'ccpayload-interrupt-'));
 const pdir6 = path.join(tmp6, '-home-u-demo');
 fs.mkdirSync(pdir6, { recursive: true });
 const interruptDay = [

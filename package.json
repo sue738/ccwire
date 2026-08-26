@@ -1,9 +1,9 @@
 {
-  "name": "ccwire",
+  "name": "ccpayload",
   "version": "0.1.0",
   "description": "See what your Claude Code session actually sends to the API: real token totals per request, a category breakdown, and the invisible overhead you never see. Includes an optional live proxy for the bytes a transcript cannot show.",
   "bin": {
-    "ccwire": "bin/ccwire.js"
+    "ccpayload": "bin/ccpayload.js"
   },
   "scripts": {
     "test": "node test/test.js && node test/proxy.test.js",
@@ -33,10 +33,10 @@
   "author": "sue738",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sue738/ccwire.git"
+    "url": "git+https://github.com/sue738/ccpayload.git"
   },
-  "homepage": "https://github.com/sue738/ccwire#readme",
+  "homepage": "https://github.com/sue738/ccpayload#readme",
   "bugs": {
-    "url": "https://github.com/sue738/ccwire/issues"
+    "url": "https://github.com/sue738/ccpayload/issues"
   }
 }
