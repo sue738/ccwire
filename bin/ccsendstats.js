@@ -1,36 +1,36 @@
 #!/usr/bin/env node
 /**
- * ccpayload 🔌 — see what your Claude Code session actually sends to the API.
+ * ccsendstats 🔌 — see what your Claude Code session actually sends to the API.
  *
  * Every request re-sends the system prompt, tool definitions, and the whole
  * conversation. The transcript records the *real* token totals (from API
  * usage) — this tool breaks them down: how much is your words, how much is
  * tool output, and how much is overhead you never see.
  *
- *   ccpayload                # latest session of the project you're in
- *   ccpayload 657f           # a session by id prefix, any project
- *   ccpayload --turns 10     # per-request token growth
- *   ccpayload --diff         # what the last request added
- *   ccpayload proxy          # live: the bytes a transcript can't show you
- *   ccpayload proxy-report   # summarize what the proxy has logged
+ *   ccsendstats                # latest session of the project you're in
+ *   ccsendstats 657f           # a session by id prefix, any project
+ *   ccsendstats --turns 10     # per-request token growth
+ *   ccsendstats --diff         # what the last request added
+ *   ccsendstats proxy          # live: the bytes a transcript can't show you
+ *   ccsendstats proxy-report   # summarize what the proxy has logged
  */
 'use strict';
 
 const path = require('path');
 const T = require('../lib/vendor/transcript.js');
-const W = require('../lib/payload.js');
+const W = require('../lib/sendstats.js');
 const P = require('../lib/proxy.js');
 
 if (process.argv[2] === 'proxy') { P.serve(); return; }
 if (process.argv[2] === 'proxy-report') { P.report(); process.exit(0); }
 
-// 出力言語: 既定は英語、ロケールが日本語のときだけ日本語(CCPAYLOAD_LANGで明示指定も可)
-const JA = /^ja/i.test(process.env.CCPAYLOAD_LANG || process.env.LC_ALL || process.env.LC_MESSAGES || process.env.LANG || '');
+// 出力言語: 既定は英語、ロケールが日本語のときだけ日本語(CCSENDSTATS_LANGで明示指定も可)
+const JA = /^ja/i.test(process.env.CCSENDSTATS_LANG || process.env.LC_ALL || process.env.LC_MESSAGES || process.env.LANG || '');
 const L = (en, ja) => (JA ? ja : en);
 
-const HELP = `ccpayload — what your Claude Code session actually sends to the API
+const HELP = `ccsendstats — what your Claude Code session actually sends to the API
 
-Usage: ccpayload [session-id-prefix] [options]
+Usage: ccsendstats [session-id-prefix] [options]
   (no args)      latest session of the project in your cwd
   --project S    latest session whose project dir matches S
   --turns N      show the last N requests (real tokens, growth per turn)
@@ -129,7 +129,7 @@ const CAT_LABELS = () => ([
 
 function printOverview(info, a) {
   const { last, visible, baseline, firstPrompt, invisible } = a;
-  console.log(`ccpayload — ${info.session.slice(0, 8)} · ${T.projectName(info.projectDir)} · ${a.requests.length} ${L('requests', 'リクエスト')}${last && last.model ? ' · ' + last.model : ''}`);
+  console.log(`ccsendstats — ${info.session.slice(0, 8)} · ${T.projectName(info.projectDir)} · ${a.requests.length} ${L('requests', 'リクエスト')}${last && last.model ? ' · ' + last.model : ''}`);
   if (!last) { console.log(L('no API requests found in this transcript', 'この transcript に API リクエストが見つかりません')); return; }
 
   console.log('');
@@ -259,7 +259,7 @@ async function collectDaily(o) {
 }
 
 function printDaily(daily) {
-  console.log(`=== ccpayload --daily ===`);
+  console.log(`=== ccsendstats --daily ===`);
   if (!daily.length) { console.log(L('(no requests recorded)', '(記録されたリクエストなし)')); return; }
   for (const d of daily) {
     console.log(`  ${d.date}  peak ${pad(d.peakPct + '%', 6)}  ${bar(d.peakPct, 24)}  p25 ${d.p25Pct}%  p50 ${d.p50Pct}%  p75 ${d.p75Pct}%  (${d.turns} ${L('turns', 'ターン')}, ${L('window', '推定窓')} ${(d.window / 1000)}k)`);
@@ -305,7 +305,7 @@ async function collectCache(o) {
 }
 
 function printCache(daily) {
-  console.log('=== ccpayload --daily --cache ===');
+  console.log('=== ccsendstats --daily --cache ===');
   if (!daily.length) { console.log(L('(no requests recorded)', '(記録されたリクエストなし)')); return; }
   console.log(`  ${L('date', '日付').padEnd(12)} ${pad(L('uncached', '非キャッシュ'), 10)} ${pad('write-1h', 10)} ${pad('write-5m', 10)} ${pad(L('read', '読込'), 10)}`);
   for (const d of daily) {
@@ -347,7 +347,7 @@ async function collectBreakdown(o) {
 }
 
 function printBreakdown(b) {
-  console.log(`=== ccpayload --daily --breakdown (${b.sessions} ${L('sessions', 'セッション')}) ===`);
+  console.log(`=== ccsendstats --daily --breakdown (${b.sessions} ${L('sessions', 'セッション')}) ===`);
   if (!b.sessions) { console.log(L('(no requests recorded)', '(記録されたリクエストなし)')); return; }
   const labels = Object.assign({ invisible: L('invisible overhead (est.)', '不可視オーバーヘッド(概算)') },
     Object.fromEntries(CAT_LABELS()));
@@ -393,7 +393,7 @@ async function collectBaseline(o) {
 }
 
 function printBaseline(daily) {
-  console.log('=== ccpayload --daily --baseline ===');
+  console.log('=== ccsendstats --daily --baseline ===');
   if (!daily.length) { console.log(L('(no sessions recorded)', '(記録されたセッションなし)')); return; }
   for (const d of daily) {
     console.log(`  ${d.date}  avg ${pad(fmt(d.avgBaseline), 9)} tok  (${L('range', '範囲')} ${fmt(d.minBaseline)}-${fmt(d.maxBaseline)}, ${d.sessions} ${L('new sessions', '新規セッション')})`);
@@ -404,7 +404,7 @@ function printBaseline(daily) {
  * --daily --interrupt: 実行中に次のプロンプトを送った割合(promptSource='queued')
  * を日別に見る。tokenの話ではなく行動の話 — usage合計やbaseline算出のような
  * 全文読み込みは不要で、各エントリのtimestamp/promptSourceだけを見れば済む
- * (cctoolstatsの--dailyと同じ、エントリ単位でsinceMsを切る境界処理)。
+ * (ccflakyの--dailyと同じ、エントリ単位でsinceMsを切る境界処理)。
  */
 async function collectInterrupt(o) {
   const sinceMs = o.days ? Date.now() - o.days * 86400000 : undefined;
@@ -430,7 +430,7 @@ async function collectInterrupt(o) {
 }
 
 function printInterrupt(daily) {
-  console.log('=== ccpayload --daily --interrupt ===');
+  console.log('=== ccsendstats --daily --interrupt ===');
   if (!daily.length) { console.log(L('(no prompts recorded)', '(記録されたプロンプトなし)')); return; }
   for (const d of daily) {
     console.log(`  ${d.date}  ${pad(`${d.interruptRate}%`, 6)}  (${d.queued}/${d.total} ${L('queued', '実行中に送信')})`);
@@ -489,4 +489,4 @@ async function main() {
   if (o.diff) printDiff(W.diffLast(entries));
 }
 
-main().catch((e) => { console.error('ccpayload:', e.message); process.exit(1); });
+main().catch((e) => { console.error('ccsendstats:', e.message); process.exit(1); });

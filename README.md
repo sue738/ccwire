@@ -1,16 +1,16 @@
-# ccpayload 🔌
+# ccsendstats 🔌
 
 **See what your Claude Code session actually sends to the API — and how much of it you never wrote.**
 
 Every request re-sends the system prompt, every tool definition, and the whole
 conversation so far. You see none of that. People noticed — and got loud about
-it: *"Claude Code sends 33k tokens before reading the prompt."* ccpayload answers
+it: *"Claude Code sends 33k tokens before reading the prompt."* ccsendstats answers
 the question locally, from your own transcripts:
 
 ```
-$ ccpayload
+$ ccsendstats
 
-ccpayload — 657fb6c1 · private · 142 requests · claude-fable-5
+ccsendstats — 657fb6c1 · private · 142 requests · claude-fable-5
 
 Last request: 184,230 tokens sent (real, from API usage)
   cache: 91.2% cache-read · 7.9% cache-write · 0.9% uncached
@@ -51,26 +51,26 @@ is measured from your own data, not from a blog post.
 Not yet published to npm — build from this checkout:
 
 ```sh
-git clone https://github.com/sue738/ccpayload.git
-cd ccpayload
+git clone https://github.com/sue738/ccsendstats.git
+cd ccsendstats
 npm link   # or: npm install -g .
 ```
 
 ```bash
-ccpayload                      # latest session of the project you're in
-ccpayload 657f                 # session by id prefix
-ccpayload --turns 10          # last 10 requests: real tokens, growth per turn
-ccpayload --diff              # what the last request added (and the biggest new blocks)
-ccpayload --json              # everything, machine-readable
-ccpayload --daily             # cross-session: peak/avg request size per day, as % of window
-ccpayload --daily --days 7    # last 7 days only
-ccpayload --daily --breakdown # cross-session: category share (where the budget actually goes)
-ccpayload --daily --cache     # cross-session: billing-rate mix (uncached/cache-write-1h/5m/cache-read)
-ccpayload --daily --baseline  # cross-session: avg tokens sent before your first word, by day
+ccsendstats                      # latest session of the project you're in
+ccsendstats 657f                 # session by id prefix
+ccsendstats --turns 10          # last 10 requests: real tokens, growth per turn
+ccsendstats --diff              # what the last request added (and the biggest new blocks)
+ccsendstats --json              # everything, machine-readable
+ccsendstats --daily             # cross-session: peak/avg request size per day, as % of window
+ccsendstats --daily --days 7    # last 7 days only
+ccsendstats --daily --breakdown # cross-session: category share (where the budget actually goes)
+ccsendstats --daily --cache     # cross-session: billing-rate mix (uncached/cache-write-1h/5m/cache-read)
+ccsendstats --daily --baseline  # cross-session: avg tokens sent before your first word, by day
 ```
 
 Output language: English by default, Japanese when your locale is `ja`
-(`CCPAYLOAD_LANG=ja|en` to force).
+(`CCSENDSTATS_LANG=ja|en` to force).
 
 ### `--daily`: how close did you get to auto-compact?
 
@@ -97,7 +97,7 @@ what to actually go fix (large tool results → narrow your reads/greps; high
 injected → a hook is noisy; high invisible overhead → too many tool
 definitions on the wire).
 
-Reuses the same estimate `ccpayload`'s single-session view already makes — no new
+Reuses the same estimate `ccsendstats`'s single-session view already makes — no new
 guessing logic — but it reads full session content instead of just the usage
 totals `--daily` needs, so it's slower over a long `--days` range.
 
@@ -124,16 +124,16 @@ file getting bigger, more skills installed), not that a conversation just
 got longer. On real data this moved from ~33k to ~52k tokens over 9 days —
 actual movement, not noise.
 
-## The other 5%: `ccpayload proxy`
+## The other 5%: `ccsendstats proxy`
 
 The transcript never records the system prompt or the tool schemas — they're
 resent on every request but never written to disk. The only way to see those
 bytes is to actually watch the traffic:
 
 ```bash
-ccpayload proxy &                                   # observe on :8789
+ccsendstats proxy &                                   # observe on :8789
 ANTHROPIC_BASE_URL=http://localhost:8789 claude   # use Claude Code as usual
-ccpayload proxy-report                               # what it saw
+ccsendstats proxy-report                               # what it saw
 ```
 
 Byte-for-byte passthrough — nothing is modified, auth headers are never
@@ -158,7 +158,7 @@ A tool that inspects your sessions deserves maximum suspicion, so:
 
 - **Zero dependencies, no postinstall, no build step** — read it first, it's short
 - **Fully local** — nothing leaves your machine, no telemetry
-- **Read-only** — it never modifies a transcript (`ccpayload proxy` is the one
+- **Read-only** — it never modifies a transcript (`ccsendstats proxy` is the one
   opt-in exception: it relays your own traffic to the API, bound to
   `127.0.0.1` only)
-- Paranoid path: `git clone https://github.com/sue738/ccpayload.git && node ccpayload/bin/ccpayload.js`
+- Paranoid path: `git clone https://github.com/sue738/ccsendstats.git && node ccsendstats/bin/ccsendstats.js`
