@@ -48,13 +48,12 @@ is measured from your own data, not from a blog post.
 
 ## Install / run
 
-Not yet published to npm — build from this checkout:
-
 ```sh
-git clone https://github.com/sue738/ccsendstats.git
-cd ccsendstats
-npm link   # or: npm install -g .
+npm install -g ccsendstats
 ```
+
+Or run it once without installing: `npx ccsendstats`. To build from source:
+`git clone https://github.com/sue738/ccsendstats.git && cd ccsendstats && npm link`.
 
 ```bash
 ccsendstats                      # latest session of the project you're in
