@@ -2,6 +2,12 @@
 
 **See what your Claude Code session actually sends to the API — and how much of it you never wrote.**
 
+`ccusage` tells you how much you spent. ccsendstats tells you **what each
+request was made of** — and how much of it you never wrote. Different question,
+different numbers: the per-category split, per-request context-window fill, and
+the 1h/5m cache-write split ([which `ccusage` does not report](#--daily---cache-what-rate-is-your-input-actually-billed-at))
+all live here, not there.
+
 Every request re-sends the system prompt, every tool definition, and the whole
 conversation so far. You see none of that. People noticed — and got loud about
 it: *"Claude Code sends 33k tokens before reading the prompt."* ccsendstats answers
