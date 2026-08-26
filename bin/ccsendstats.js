@@ -88,6 +88,14 @@ function parseArgs(argv) {
     else if (a === '--interrupt') o.interrupt = true;
     else if (a === '-h' || a === '--help') { console.log(HELP); process.exit(0); }
     else if (!a.startsWith('-') && !o.session) o.session = a;
+    else if (a.startsWith('-')) {
+      // 知らないフラグを黙って捨てると、typo(--dyas 1)が「全期間の集計」として
+      // 成功し、間違った数字を正しい答えだと思って読むことになる(初見レビューで
+      // 実際に踏まれた)。知らないものは受け取らない。
+      console.error(L(`unknown option: ${a}`, `知らないオプション: ${a}`));
+      console.error(L('try --help', '--help を参照してください'));
+      process.exit(2);
+    }
   }
   return o;
 }
